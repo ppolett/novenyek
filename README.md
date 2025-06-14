@@ -1157,6 +1157,127 @@ class Program
 }
 
 
+-------------------------
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SQLite;
+
+namespace SqLite_Temp
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        TextBox tb1;
+        TextBox tb2;
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+            string databaseFile = "Valami.db";
+          //  SQLiteConnection.CreateFile(databaseFile);
+            
+            string connectionString = $"Data Source={databaseFile};Version=3;";
+            try
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    Console.WriteLine("Kapcsolat létrejött az adatbázissal.");
+                    MessageBox.Show("Kapcsolat létrejött az adatbázissal.");
+                    string query = @"
+                        CREATE TABLE IF NOT EXISTS Users (
+                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             Name TEXT NOT NULL,
+                             Age INTEGER NOT NULL
+                             );";
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                        Console.WriteLine("Tábla létrehozva vagy már létezik.");
+                    }
+                    
+                    string selectQuery = "SELECT Id, Name, Age FROM Users;";
+                    using (SQLiteCommand cmd = new SQLiteCommand(selectQuery, connection))
+                    {
+                        using (SQLiteDataReader dataReader = cmd.ExecuteReader())
+                        {
+                            while (dataReader.Read())
+                            {
+                                int id = dataReader.GetInt32(0); // Az első oszlop (Id)
+                                string name = dataReader.GetString(1); // A második oszlop (Name)
+                                int age = dataReader.GetInt32(2); // A harmadik oszlop (Age)
+
+                                Console.WriteLine($"Id: {id}, Name: {name}, Age: {age}");
+                            }
+                        }
+                    }
+                    Columns();
+                }
+                }
+            catch (SQLiteException ex)
+            {
+                Console.WriteLine("Hiba történt az adatbázis kapcsolat létrehozása során: " + ex.Message);
+
+            }
+        }
+        public void Columns()
+        {
+            Label lb1 = new Label();
+            lb1.Text = "Név:";
+            lb1.Location = new Point(20, 40);
+            lb1.Size = new Size(100, 30);
+            this.Controls.Add(lb1);
+            Label lb2 = new Label();
+            lb2.Text = "Kor:";
+            lb2.Location = new Point(20, 70);
+            lb2.Size = new Size(100, 30);
+            this.Controls.Add(lb2);
+            tb1 = new TextBox();
+            tb1.Location = new Point(120, 40);
+            tb1.Size = new Size(100, 30);
+            this.Controls.Add(tb1);
+            tb2 = new TextBox();
+            tb2.Location = new Point(120, 70);
+            tb2.Size = new Size(100, 30);
+            this.Controls.Add(tb2);
+            Button bt1 = new Button();
+            bt1.Location = new Point(120, 120);
+            bt1.Size = new Size(80, 40);
+            bt1.Text = "Feltölt";
+            this.Controls.Add(bt1);
+            bt1.Click += new EventHandler(this.Feltolt);
+
+
+        }
+        void Feltolt(Object sender,EventArgs e) 
+        {
+            string connectionString = $"Data Source={"Valami.db"};Version=3;";
+            SQLiteConnection connection = new SQLiteConnection(connectionString);
+            connection.Open();
+            string query1 = @"INSERT INTO Users(Name, Age) VALUES('"+this.tb1.Text+"',"+this.tb2.Text+");";
+            using (SQLiteCommand cmd = new SQLiteCommand(query1, connection))
+            {
+                cmd.ExecuteNonQuery();
+                Console.WriteLine("Adatok hozzáadva");
+                MessageBox.Show("Adatok hozzáadva");
+            }
+
+        }
+
+    }
+}
+
+
 
 
 
